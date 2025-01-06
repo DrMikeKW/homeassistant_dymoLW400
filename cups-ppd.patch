@@ -1,0 +1,44 @@
+diff --git a/src/common/CupsFilter.h b/src/common/CupsFilter.h
+--- a/src/common/CupsFilter.h
++++ b/src/common/CupsFilter.h
+@@ -26,6 +26,7 @@
+ #include <cups/cups.h>
+ #include <cups/raster.h>
+ #include <memory>
++#include <cups/ppd.h>  // Add explicit include for PPD functions
+
+ namespace DymoPrinterDriver
+ {
+@@ -132,7 +133,7 @@ namespace DymoPrinterDriver
+   void InitFilter()
+   {
+     // Replace deprecated auto_ptr with unique_ptr
+-    std::auto_ptr<CHalftoneFilter> H;
++    std::unique_ptr<CHalftoneFilter> H;
+
+     if (Halftoning_ == "ErrorDiffusion")
+       H.reset(new CErrorDiffusionHalftoning());
+@@ -214,8 +215,15 @@ namespace DymoPrinterDriver
+
+   void InitDocument(const char* PrinterName)
+   {
++    #if (CUPS_VERSION_MAJOR > 1) || (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR >= 7)
++    cups_dest_t *dest = nullptr;
++    cups_dinfo_t *info = nullptr;
++    num_options = cupsParseOptions(getenv("PPD"), num_options, &options);
++    #else
+     ppd_file_t* ppd = ppdOpenFile(getenv("PPD"));
++    #endif
+
++    #if !(CUPS_VERSION_MAJOR > 1) || (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR < 7)
+     if (!ppd)
+     {
+       fprintf(stderr, "ERROR: Unable to open PPD file %s\n", getenv("PPD"));
+@@ -246,6 +254,7 @@ namespace DymoPrinterDriver
+     }
+
+     ppdClose(ppd);
++    #endif
+   }
+
+ }; // class CCupsFilter
