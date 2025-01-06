@@ -1,245 +1,102 @@
 from flask import Flask, request, jsonify
+from PIL import Image, ImageDraw, ImageFont
 import subprocess
-import logging
+import tempfile
 import os
-import time
-import re
-
-logging.basicConfig(
-    level=logging.DEBUG,  # Changed to DEBUG for more detailed logs
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-def get_detailed_printer_status():
-    """Get detailed printer status including queue and driver info"""
-    status_info = {}
+# Label size configurations (in pixels, assuming 300 DPI)
+LABEL_SIZES = {
+    'standard_address': {'width': 1960, 'height': 3384},  # w167h288
+    'other_address': {'width': 1180, 'height': 236}      # w100h20
+}
 
-    try:
-        # Check printer existence and basic status
-        lpstat_result = subprocess.run(
-            ['lpstat', '-v', 'dymo'],
-            capture_output=True,
-            text=True
-        )
-        status_info['device_status'] = lpstat_result.stdout.strip()
+def create_label(label_type, orientation, title, subtitle):
+    # Get label dimensions
+    dimensions = LABEL_SIZES[label_type]
+    width = dimensions['width']
+    height = dimensions['height']
 
-        # Get printer state
-        lpstat_p_result = subprocess.run(
-            ['lpstat', '-p', 'dymo', '-l'],
-            capture_output=True,
-            text=True
-        )
-        status_info['printer_state'] = lpstat_p_result.stdout.strip()
+    # Create new image with white background
+    image = Image.new('RGB', (width, height), 'white')
+    draw = ImageDraw.Draw(image)
 
-        # Get queue status
-        lpq_result = subprocess.run(
-            ['lpq', '-P', 'dymo'],
-            capture_output=True,
-            text=True
-        )
-        status_info['queue_status'] = lpq_result.stdout.strip()
+    # Calculate available space for text
+    padding = 20  # pixels
+    available_width = width - (2 * padding)
+    available_height = height - (2 * padding)
 
-        # Get printer options
-        lpoptions_result = subprocess.run(
-            ['lpoptions', '-p', 'dymo', '-l'],
-            capture_output=True,
-            text=True
-        )
-        status_info['printer_options'] = lpoptions_result.stdout.strip()
+    # Start with a large font size and scale down until it fits
+    def get_font_size(text, max_width, max_height, is_title=True):
+        font_size = 200 if is_title else 100  # Start with large size
+        while font_size > 8:  # Minimum readable size
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+            text_width, text_height = draw.textsize(text, font=font)
+            if text_width <= max_width and text_height <= (max_height / 2):
+                return font_size, font
+            font_size -= 2
+        return font_size, ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
 
-        logger.debug(f"Detailed printer status: {status_info}")
-        return status_info
+    # Get appropriate font sizes
+    title_font_size, title_font = get_font_size(title, available_width, available_height, True)
+    subtitle_font_size, subtitle_font = get_font_size(subtitle, available_width, available_height, False)
 
-    except Exception as e:
-        logger.error(f"Error getting detailed printer status: {str(e)}")
-        return None
+    # Calculate text dimensions
+    title_width, title_height = draw.textsize(title, font=title_font)
+    subtitle_width, subtitle_height = draw.textsize(subtitle, font=subtitle_font)
 
-def check_printer_status():
-    """Enhanced printer status check"""
-    try:
-        detailed_status = get_detailed_printer_status()
-        if not detailed_status:
-            return False
+    # Calculate positions to center the text
+    title_x = (width - title_width) // 2
+    subtitle_x = (width - subtitle_width) // 2
 
-        # Check if printer is accepting jobs
-        accept_check = subprocess.run(
-            ['cupsaccept', '-h', 'localhost', 'dymo'],
-            capture_output=True,
-            text=True
-        )
+    total_height = title_height + subtitle_height
+    start_y = (height - total_height) // 2
 
-        # Check if printer is enabled
-        enable_check = subprocess.run(
-            ['cupsenable', 'dymo'],
-            capture_output=True,
-            text=True
-        )
+    # Draw the text
+    draw.text((title_x, start_y), title, fill='black', font=title_font)
+    draw.text((subtitle_x, start_y + title_height + 10), subtitle, fill='black', font=subtitle_font)
 
-        return (
-            detailed_status.get('device_status') and
-            'error' not in detailed_status.get('printer_state', '').lower() and
-            accept_check.returncode == 0 and
-            enable_check.returncode == 0
-        )
-    except Exception as e:
-        logger.error(f"Error in printer status check: {str(e)}")
-        return False
+    # Rotate if needed
+    if orientation == 'landscape':
+        image = image.rotate(90, expand=True)
 
-def get_print_job_status(job_id):
-    """Enhanced print job status check"""
-    try:
-        # Check job status using lpstat
-        lpstat_result = subprocess.run(
-            ['lpstat', '-o', 'dymo'],  # Changed to use -o flag for job listing
-            capture_output=True,
-            text=True
-        )
+    return image
 
-        # Check queue status
-        lpq_result = subprocess.run(
-            ['lpq', '-P', 'dymo'],  # Removed job_id parameter
-            capture_output=True,
-            text=True
-        )
-
-        status = {
-            'lpstat_output': lpstat_result.stdout,
-            'lpq_output': lpq_result.stdout,
-            'error_output': lpstat_result.stderr or lpq_result.stderr
-        }
-
-        logger.debug(f"Job {job_id} detailed status: {status}")
-        return status
-
-    except Exception as e:
-        logger.error(f"Error checking job status: {str(e)}")
-        return None
-
-@app.route('/print', methods=['GET'])
+@app.route('/print_label', methods=['POST'])
 def print_label():
-    """Enhanced print endpoint with better error handling and status checking"""
-    text = request.args.get('text', '')
-    if not text:
-        return jsonify({'error': 'No text provided'}), 400
-
-    logger.info(f"Print request received for text: {text}")
-
-    # Get detailed printer status before printing
-    printer_status = get_detailed_printer_status()
-    if not printer_status:
-        return jsonify({'error': 'Unable to get printer status'}), 500
-
-    logger.info(f"Current printer status: {printer_status}")
-
-    if not check_printer_status():
-        return jsonify({
-            'error': 'Printer not ready',
-            'details': printer_status
-        }), 500
-
     try:
-        # Create temporary file with unique name
-        temp_file = f'/tmp/label_{int(time.time())}.txt'
-        with open(temp_file, 'w') as f:
-            f.write(text)
+        data = request.json
+        label_type = data.get('label_type', 'standard_address')
+        orientation = data.get('orientation', 'portrait')
+        title = data.get('title', '')
+        subtitle = data.get('subtitle', '')
 
-        # Enhanced print command with more options
-        cmd = [
-            'lp',
-            '-d', 'dymo',
-            '-o', 'media=w162h90',
-            '-o', 'raw',  # Try raw mode for direct printing
-            '-o', 'print-quality=5',  # High quality
-            temp_file
-        ]
+        if not title:
+            return jsonify({'error': 'Title is required'}), 400
 
-        logger.debug(f"Executing print command: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        # Create the label image
+        label = create_label(label_type, orientation, title, subtitle)
 
-        # Clean up temp file
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
+        # Save to temporary file
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+            label.save(tmp.name, 'PNG')
+            tmp_path = tmp.name
 
-        if result.returncode == 0:
-            # Extract job ID from lp output
-            job_id_match = re.search(r'-\d+', result.stdout)
-            if not job_id_match:
-                return jsonify({'error': 'Could not determine job ID'}), 500
+        # Determine page size based on label type
+        page_size = 'w167h288' if label_type == 'standard_address' else 'w100h20'
 
-            job_id = job_id_match.group()
-            logger.info(f"Print job submitted successfully with ID: {job_id}")
+        # Print using lpr
+        cmd = ['lpr', '-P', 'dymo', '-o', f'PageSize={page_size}', tmp_path]
+        subprocess.run(cmd, check=True)
 
-            # Wait a moment for the print job to process
-            time.sleep(2)
+        # Clean up temporary file
+        os.unlink(tmp_path)
 
-            # Check if job is still in queue
-            job_status = get_print_job_status(job_id)
-
-            # If we can't find the job in queue, assume it completed
-            if "dymo is ready" in job_status.get('lpq_output', '').lower():
-                return jsonify({
-                    'status': 'success',
-                    'job_id': job_id,
-                    'message': 'Print job completed',
-                    'details': job_status
-                })
-
-            # If we see specific error messages, report failure
-            if any(error in str(job_status).lower() for error in ['error', 'failed', 'canceled']):
-                return jsonify({
-                    'error': 'Print job failed',
-                    'job_id': job_id,
-                    'status': job_status
-                }), 500
-
-                attempt += 1
-                time.sleep(2)  # Increased wait time between checks
-
-            return jsonify({
-                'status': 'submitted',
-                'job_id': job_id,
-                'message': 'Print job submitted but completion status unknown',
-                'last_known_status': job_status
-            })
-        else:
-            error_msg = result.stderr or "Unknown error occurred"
-            logger.error(f"Print command failed: {error_msg}")
-            return jsonify({
-                'error': error_msg,
-                'command_output': result.stdout,
-                'printer_status': printer_status
-            }), 500
+        return jsonify({'status': 'success', 'message': 'Label printed successfully'})
 
     except Exception as e:
-        logger.error(f"Error printing label: {str(e)}")
-        return jsonify({
-            'error': str(e),
-            'printer_status': printer_status
-        }), 500
-
-@app.route('/status', methods=['GET'])
-def printer_status():
-    """Enhanced status endpoint with detailed printer information"""
-    detailed_status = get_detailed_printer_status()
-    if not detailed_status:
-        return jsonify({
-            'status': 'error',
-            'message': 'Unable to get printer status'
-        }), 503
-
-    is_ready = check_printer_status()
-    return jsonify({
-        'status': 'ready' if is_ready else 'not ready',
-        'details': detailed_status
-    })
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    # Initial printer check on startup
-    logger.info("Checking printer status on startup...")
-    initial_status = get_detailed_printer_status()
-    logger.info(f"Initial printer status: {initial_status}")
-
     app.run(host='0.0.0.0', port=8000)

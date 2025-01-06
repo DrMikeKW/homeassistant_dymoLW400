@@ -1,8 +1,7 @@
 name: "Dymo Label Printer"
 version: "1.0.0"
 slug: "dymo_printer"
-description: "Print labels on Dymo LabelWriter 450 via HTTP requests"
-url: "https://github.com/yourusername/ha-dymo-printer"
+description: "Print labels on Dymo LabelWriter 400 via HTTP requests"
 init: false
 arch:
   - aarch64
@@ -13,6 +12,9 @@ arch:
 startup: application
 boot: auto
 usb: true
+full_access: true
+devices:
+  - /dev/bus/usb
 ports:
   8000/tcp: 8000
 ports_description:
