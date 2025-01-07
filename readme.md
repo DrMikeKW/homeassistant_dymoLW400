@@ -51,7 +51,7 @@ frontend:
 
 ### Step 4: Add the Lovelace Card
 
-1. Copy the `label-printer-card.js` file to your `www` folder in Home Assistant
+1. Copy the `label-printer-card.js` file to your `config/www` folder in Home Assistant
 2. Add the card to your dashboard:
 ```yaml
 type: 'custom:label-printer-card'
