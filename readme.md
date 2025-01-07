@@ -22,8 +22,6 @@ Print labels directly from your Home Assistant dashboard using a Dymo LabelWrite
 2. it should popup @ addons after looking for updates (right upper corner) AND refresh the page
 3. Install the addon!
 
-![Lovelace card](img/2.png)
-
 ### Step 2: Configure the Add-on
 
 1. After installation, go to the add-on's Configuration tab
@@ -57,6 +55,8 @@ frontend:
 type: 'custom:label-printer-card'
 entity: sensor.dymo_printer # can be a random entity as lovelace requires this
 ```
+
+![Lovelace card](img/2.png)
 
 ## Supported Label Types
 
