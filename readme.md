@@ -18,11 +18,9 @@ Print labels directly from your Home Assistant dashboard using a Dymo LabelWrite
 
 ### Step 1: Install the Add-on
 
-1. Navigate to your Home Assistant's Supervisor panel
-2. Click on the Add-on Store
-3. Click the three dots in the top right and select "Repositories"
-4. Add this repository URL
-5. Find the "Dymo Label Printer" add-on and click install
+1. copy this addon to the addons folder on your home assistant device
+2. it should popup @ addons after looking for updates (right upper corner) AND refresh the page
+3. Install the addon!
 
 ![Lovelace card](img/2.png)
 
