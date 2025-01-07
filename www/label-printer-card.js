@@ -185,14 +185,6 @@ class LabelPrinterCard extends HTMLElement {
         this.config = config;
     }
 
-    getCurrentDate() {
-        const now = new Date();
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = now.getFullYear();
-        return `${day}-${month}-${year}`;
-    }
-
     render() {
         const content = `
             <ha-card>
@@ -206,12 +198,12 @@ class LabelPrinterCard extends HTMLElement {
                 <div class="card-content">
                     <div class="form-group">
                         <label for="label_title">Label Title</label>
-                        <input type="text" id="label_title" placeholder="Enter title" value="${this.getCurrentDate()}" />
+                        <input type="text" id="label_title" placeholder="Enter title" value="Hello World" />
                     </div>
                     
                     <div class="form-group">
                         <label for="label_subtitle">Label Subtitle</label>
-                        <input type="text" id="label_subtitle" placeholder="Enter subtitle" value="gemaakt op" />
+                        <input type="text" id="label_subtitle" placeholder="Enter subtitle" value="Subtitle here" />
                     </div>
                     
                     <div class="form-group">
@@ -251,24 +243,13 @@ class LabelPrinterCard extends HTMLElement {
         const orientation = this.shadowRoot.getElementById("label_orientation").value;
 
         try {
-            const response = await fetch('http://homeassistant.local:8000/print_label', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    title,
-                    subtitle,
-                    label_type: labelType,
-                    orientation,
-                })
+            await this._hass.callService('rest_command', 'print_label', {
+                title,
+                subtitle,
+                label_type: labelType,
+                orientation,
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            // Show success notification using Home Assistant
             this._hass.callService('persistent_notification', 'create', {
                 title: 'Label Printer',
                 message: 'Label sent to printer successfully',
