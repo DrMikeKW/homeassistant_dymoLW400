@@ -100,23 +100,6 @@ data:
 
 This can be used in automations, scripts, or called directly through the Developer Tools.
 
-## Troubleshooting
-
-1. **Printer not detected:**
-    - Check USB connection
-    - Verify USB device permissions
-    - Check add-on logs for detection messages
-
-2. **Print quality issues:**
-    - Clean printer head
-    - Verify genuine Dymo labels are being used
-    - Check label type selection matches physical label
-
-3. **Card not loading:**
-    - Verify resource path in Lovelace configuration
-    - Check browser console for JavaScript errors
-    - Confirm Home Assistant is running latest version
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -129,15 +112,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - Thanks to the Home Assistant community
 - Dymo for printer specifications
-- All contributors and testers
-
-## Support
-
-If you encounter any issues or have questions:
-1. Check the troubleshooting section
-2. Review add-on logs
-3. Open an issue on GitHub with:
-    - Home Assistant version
-    - Add-on version
-    - Relevant logs
-    - Steps to reproduce
