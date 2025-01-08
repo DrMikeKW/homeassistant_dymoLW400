@@ -19,8 +19,8 @@ class LabelPrinterCard extends HTMLElement {
             }
             
             .card-content * {
-				box-sizing: border-box;
-			}
+                box-sizing: border-box;
+            }
 
             ha-card {
                 border-radius: var(--card-border-radius);
@@ -163,11 +163,19 @@ class LabelPrinterCard extends HTMLElement {
                     background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23FFFFFF' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
                     background-color: rgba(28, 28, 30, 0.6);
                     background-repeat: no-repeat;
-                	background-position: right 16px center;
-                	padding-right: 40px;
+                    background-position: right 16px center;
+                    padding-right: 40px;
                 }
             }
         `;
+    }
+
+    getCurrentDate() {
+        const date = new Date();
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
     }
 
     set hass(hass) {
@@ -203,7 +211,7 @@ class LabelPrinterCard extends HTMLElement {
                     
                     <div class="form-group">
                         <label for="label_subtitle">Label Subtitle</label>
-                        <input type="text" id="label_subtitle" placeholder="Enter subtitle" value="Subtitle here" />
+                        <input type="text" id="label_subtitle" placeholder="Enter subtitle" value="${this.getCurrentDate()}" />
                     </div>
                     
                     <div class="form-group">
