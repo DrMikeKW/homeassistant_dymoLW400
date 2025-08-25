@@ -1,0 +1,33 @@
+{
+  "name": "Dymo LabelWriter 400",
+  "version": "1.0.0",
+  "slug": "dymo_labelwriter_400",
+  "description": "Print labels directly from Home Assistant using a Dymo LabelWriter 400",
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "startup": "application",
+  "init": false,
+  "ports": {
+    "8000/tcp": 8000
+  },
+  "ports_description": {
+    "8000/tcp": "Web interface for label printing"
+  },
+  "webui": "http://[HOST]:[PORT:8000]",
+  "ingress": true,
+  "ingress_port": 8000,
+  "panel_icon": "mdi:printer-3d",
+  "homeassistant_api": true,
+  "options": {
+    "label_types": ["standard_address", "multi_purpose"],
+    "default_orientation": "portrait"
+  },
+  "schema": {
+    "label_types": ["str"],
+    "default_orientation": "str"
+  },
+  "image": "dymo_labelwriter_400_{arch}",
+  "repository": "https://github.com/MaxGramser/homeassistant_dymoLW400",
+  "url": "https://github.com/MaxGramser/homeassistant_dymoLW400",
+  "maintainer": "MaxGramser",
+  "stage": "stable"
+} 

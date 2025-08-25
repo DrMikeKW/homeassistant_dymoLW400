@@ -1,0 +1,9 @@
+{
+  "domain": "dymo_labelwriter",
+  "name": "Dymo LabelWriter 400",
+  "documentation": "https://github.com/MaxGramser/homeassistant_dymoLW400",
+  "dependencies": [],
+  "codeowners": ["@MaxGramser"],
+  "requirements": [],
+  "version": "1.0.0"
+}
