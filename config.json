@@ -1,6 +1,6 @@
 {
   "name": "Dymo LabelWriter 400",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "slug": "dymo_labelwriter_400",
   "description": "Print labels directly from Home Assistant using a Dymo LabelWriter 400",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
