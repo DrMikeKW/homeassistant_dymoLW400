@@ -26,8 +26,8 @@
     "default_orientation": "str"
   },
   "image": "dymo_labelwriter_400_{arch}",
-  "repository": "https://github.com/MaxGramser/homeassistant_dymoLW400",
-  "url": "https://github.com/MaxGramser/homeassistant_dymoLW400",
-  "maintainer": "MaxGramser",
+  "repository": "https://github.com/DrMikeKW/homeassistant_dymoLW400",
+  "url": "https://github.com/DrMikeKW/homeassistant_dymoLW400",
+  "maintainer": "DrMikeKW",
   "stage": "stable"
 } 
