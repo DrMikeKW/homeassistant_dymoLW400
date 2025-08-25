@@ -7,7 +7,7 @@ build_from:
   i386: ghcr.io/hassio-addons/base/i386:12.2.2
 labels:
   io.hass.type: addon
-  io.hass.version: "1.0.0"
+  io.hass.version: "1.0.1"
   org.opencontainers.image.description: "Print labels directly from Home Assistant using a Dymo LabelWriter 400"
   org.opencontainers.image.licenses: "MIT"
   org.opencontainers.image.source: "https://github.com/DrMikeKW/homeassistant_dymoLW400"
