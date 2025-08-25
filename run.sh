@@ -1,5 +1,16 @@
 #!/usr/bin/with-contenv bashio
 
+# Load bashio
+bashio::log.info "Starting Dymo LabelWriter 400 add-on..."
+
+# Check if CUPS is running
+if bashio::supervisor.ping; then
+    bashio::log.info "Home Assistant Supervisor is running"
+else
+    bashio::log.error "Home Assistant Supervisor is not running"
+    exit 1
+fi
+
 bashio::log.info "Setting up CUPS configuration..."
 
 # Set up CUPS configuration

@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  dymo-labelwriter:
+    build: .
+    container_name: dymo-labelwriter-400
+    ports:
+      - "8000:8000"
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    volumes:
+      - ./cupsd.conf:/etc/cups/cupsd.conf:ro
+    privileged: true
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1

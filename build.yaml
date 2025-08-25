@@ -10,6 +10,6 @@ labels:
   io.hass.version: "1.0.0"
   org.opencontainers.image.description: "Print labels directly from Home Assistant using a Dymo LabelWriter 400"
   org.opencontainers.image.licenses: "MIT"
-  org.opencontainers.image.source: "https://github.com/MaxGramser/homeassistant_dymoLW400"
+  org.opencontainers.image.source: "https://github.com/DrMikeKW/homeassistant_dymoLW400"
   org.opencontainers.image.title: "Dymo LabelWriter 400"
-  org.opencontainers.image.vendor: "MaxGramser" 
+  org.opencontainers.image.vendor: "DrMikeKW" 

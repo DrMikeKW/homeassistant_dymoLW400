@@ -1,4 +1,6 @@
 ARG BUILD_FROM
+ARG BUILD_ARCH
+ARG TARGET_ARCH
 FROM $BUILD_FROM
 
 RUN apk update
@@ -28,9 +30,9 @@ RUN chmod 644 /etc/cups/cupsd.conf
 
 # Copy PPD file
 COPY dymo_drivers.zip /tmp
-WORKDIR tmp
+WORKDIR /tmp
 RUN unzip -q dymo_drivers.zip
-WORKDIR dymo_drivers
+WORKDIR /tmp/dymo_drivers
 RUN ./build.sh
 RUN make install
 WORKDIR /
