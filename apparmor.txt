@@ -1,24 +1,5 @@
 #include <tunables/global>
 
 profile addon_drmikekw_homeassistant_dymolw400 flags=(attach_disconnected) {
-  # Allow access to USB devices
-  /dev/bus/usb/** rw,
-  /dev/usb/** rw,
-
-  # Allow access to CUPS
-  /var/run/cups/** rw,
-  /var/spool/cups/** rw,
-  /etc/cups/** r,
-
-  # Allow access to fonts
-  /usr/share/fonts/** r,
-
-  # Allow access to temporary files
-  /tmp/** rw,
-  /var/tmp/** rw,
-
-  # Allow access to Python and system libraries
-  /usr/lib/** r,
-  /usr/bin/** rx,
-  /lib/** r,
+  #include <abstractions/base>
 }
